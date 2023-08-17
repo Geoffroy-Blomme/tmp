@@ -7,6 +7,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { set } from "mongoose/lib/driver";
 
 const Main = styled.main`
   flex: 1;
@@ -97,6 +98,7 @@ const TransactionButton = styled.button`
 const EditProfileInputWrapper = styled.div`
   display: flex;
   margin-bottom: 25px;
+  justify-content: center;
 `;
 
 const EditProfileInput = styled.input`
@@ -132,18 +134,34 @@ const EditProfileButton = styled.button`
   }
 `;
 
+const EditProfileErrorWarning = styled.span`
+  font-size: 12px;
+`;
+
 export default function User() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const isSignedIn = useSelector((state) => state.SignIn.isLoggedIn);
   const userInfo = useSelector((state) => state.SignIn.data.user);
   const token = useSelector((state) => state.SignIn.data.body.token);
-  const tmp = useSelector((state) => state);
-  console.log(tmp);
   const [userIsModifyingProfile, setUserIsModifyingProfile] = useState(false);
-
+  const [firstNameError, setFirstNameError] = useState(false);
+  const [lastNameError, setLastNameError] = useState(false);
   let firstName = "";
   let lastName = "";
+  let firstNameWarningContent;
+  let lastNameWarningContent;
+  if (firstNameError) {
+    firstNameWarningContent = "Votre prénom doit contenir au moins 2 lettres";
+  } else {
+    firstNameWarningContent = "";
+  }
+  if (lastNameError) {
+    lastNameWarningContent = "Votre nom doit contenir au moins 2 lettres";
+  } else {
+    lastNameWarningContent = "";
+  }
+
   if (userInfo) {
     firstName = userInfo.firstName;
     lastName = userInfo.lastName;
@@ -165,6 +183,19 @@ export default function User() {
       setUserIsModifyingProfile(!userIsModifyingProfile);
       setFirstNameInput("");
       setLastNameInput("");
+      setFirstNameError(false);
+      setLastNameError(false);
+    } else {
+      if (firstNameInput.length <= 1) {
+        setFirstNameError(true);
+      } else {
+        setFirstNameError(false);
+      }
+      if (lastNameInput.length <= 1) {
+        setLastNameError(true);
+      } else {
+        setLastNameError(false);
+      }
     }
   };
   useEffect(() => {
@@ -198,22 +229,53 @@ export default function User() {
             Edit Name
           </EditButton>
           <EditProfileInputWrapper
-            style={{ display: !userIsModifyingProfile ? "none" : "revert" }}
+            style={{
+              display: !userIsModifyingProfile ? "none" : "flex",
+            }}
           >
-            <EditProfileInput
-              placeholder={firstName}
-              value={firstNameInput}
-              onChange={(e) => {
-                setFirstNameInput(e.target.value);
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "baseline",
               }}
-            ></EditProfileInput>
-            <EditProfileInput
-              placeholder={lastName}
-              value={lastNameInput}
-              onChange={(e) => {
-                setLastNameInput(e.target.value);
+            >
+              <EditProfileInput
+                placeholder={firstName}
+                value={firstNameInput}
+                style={{
+                  border: firstNameError ? "2px solid red" : "2px inset ",
+                }}
+                onChange={(e) => {
+                  setFirstNameInput(e.target.value);
+                }}
+              ></EditProfileInput>
+              <EditProfileErrorWarning>
+                {firstNameWarningContent}
+              </EditProfileErrorWarning>
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "baseline",
               }}
-            ></EditProfileInput>
+            >
+              <EditProfileInput
+                placeholder={lastName}
+                value={lastNameInput}
+                style={{
+                  border: lastNameError ? "2px solid red" : "2px inset ",
+                }}
+                onChange={(e) => {
+                  setLastNameInput(e.target.value);
+                }}
+              ></EditProfileInput>
+              <EditProfileErrorWarning>
+                {lastNameWarningContent}
+              </EditProfileErrorWarning>
+            </div>
           </EditProfileInputWrapper>
           <EditProfileButtonWrapper
             style={{ display: !userIsModifyingProfile ? "none" : "revert" }}

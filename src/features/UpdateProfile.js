@@ -4,7 +4,6 @@ import { updateProfile } from "../services/ApiCalls";
 export const updateProfilePut = createAsyncThunk(
   "UpdateProfile/Update",
   async (data) => {
-    console.log(data);
     const { firstNameInput, lastNameInput, token } = data;
     return updateProfile(firstNameInput, lastNameInput, token);
   }
